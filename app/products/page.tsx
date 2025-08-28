@@ -42,6 +42,11 @@ export default async function ProductsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {products.map((p: any) => (
           <div key={p.id} className="bg-white rounded-xl shadow-lg p-6">
+            <img
+              src={`http://localhost:1337${p.mainImage.url}`}
+              alt={p.title}
+              className="w-full h-64 object-cover rounded-lg mb-6"
+            />
             <h2 className="text-xl font-semibold mb-2 text-gray-800">
               {p.title}
             </h2>

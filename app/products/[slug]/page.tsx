@@ -20,6 +20,7 @@ async function getProduct(slug: string) {
     slug: p.slug,
     price: p.price,
     short_desc: p.short_desc,
+    mainImage: p.mainImage.url,
   };
 }
 
@@ -38,6 +39,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-6">
+        <img
+          src={`http://localhost:1337${product.mainImage}`}
+          alt={product.title}
+          className="w-full h-64 object-cover rounded-lg mb-6"
+        />
         <h1 className="text-3xl font-bold text-gray-800 mb-4">{product.title}</h1>
         {product.short_desc && (
           <p className="text-gray-600 mb-6">{product.short_desc}</p>
