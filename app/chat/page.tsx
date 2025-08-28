@@ -31,7 +31,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[90vh]">
       {/* Messages container */}
       <div className="flex-1 relative overflow-y-auto p-6 space-y-6">
         {/* Welcome Screen */}
@@ -68,6 +68,11 @@ export default function ChatPage() {
                       href={`/products/${p.slug}`}
                       className="block p-4 rounded-xl shadow-md bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-lg hover:bg-gray-200 transition"
                     >
+                      <img
+                        src={`http://localhost:1337${p.image.url}`}
+                        alt={p.title}
+                        className="w-full h-32 object-cover rounded-md mb-2"
+                      />
                       <h4 className="font-semibold text-sm text-gray-800">
                         {p.title || p.uid}
                       </h4>
