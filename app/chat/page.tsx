@@ -31,7 +31,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-[90vh]">
+    <div className="flex flex-col h-[80vh]">
       {/* Messages container */}
       <div className="flex-1 relative overflow-y-auto p-6 space-y-6">
         {/* Welcome Screen */}

@@ -24,14 +24,12 @@ export default async function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 md:p-12">
-      {/* Banner */}
-      <div className="bg-green-600 text-white rounded-xl shadow-md mb-10 p-8 text-center">
+      <div className="bg-gradient-to-br from-indigo-700 to-purple-700 text-white rounded-xl shadow-md mb-10 p-8 text-center">
         <h1 className="text-3xl font-bold mb-2">Welcome to Our Shopping Page!</h1>
         <p className="text-lg">Select from a wide variety of amazing products 🎉</p>
       </div>
 
-      {/* Product List */}
-      <div className="space-y-6">
+      <div className="space-y-8">
         {products.map((p: any) => {
           const imgUrl = p.mainImage?.url ? `${STRAPI_URL}${p.mainImage.url}` : null;
 
@@ -40,7 +38,6 @@ export default async function ProductsPage() {
               key={p.id}
               className="flex flex-col md:flex-row bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
             >
-              {/* Image */}
               <div className="md:w-1/5 flex items-center justify-center md:border-r border-r-0 border-b md:border-b-0">
                 {imgUrl ? (
                   <img src={imgUrl} alt={p.title} className="object-contain h-80 w-full" />
@@ -51,22 +48,19 @@ export default async function ProductsPage() {
                 )}
               </div>
 
-              {/* Details */}
               <div className="flex-1 p-5">
                 <h2 className="text-xl font-bold text-gray-800">{p.title}</h2>
                 {p.short_desc && (
-                  <p className="text-gray-600 mt-2">{p.short_desc}</p>
+                  <p className="text-gray-600 mt-2 md:block hidden">{p.short_desc}</p>
                 )}
-                {/* (Optional) Ratings */}
-                <div className="flex items-center mt-3">
+                <div className="flex items-center mt-1.5 md:mt-3">
                   <span className="text-green-600 font-semibold">★ ★ ★ ★ ☆</span>
                   <span className="ml-2 text-sm text-gray-500">289 reviews</span>
                 </div>
               </div>
 
-              {/* Right Side (Price + Actions) */}
-              <div className="md:w-1/4 border-t md:border-t-0 md:border-l flex flex-col justify-center p-5 space-y-3 text-center">
-                <div>
+              <div className="md:w-1/4 border-t md:border-t-0 md:border-l flex flex-col justify-center p-5 space-y-3 md:text-center">
+                <div className="pb-2">
                   <span className="text-indigo-700 font-extrabold text-xl">
                     ${p.price}
                   </span>
@@ -76,7 +70,7 @@ export default async function ProductsPage() {
 
                 <Link
                   href={`/products/${p.slug}`}
-                  className="block w-full bg-indigo-600 text-white py-2 rounded-md font-medium hover:bg-indigo-700 transition"
+                  className="block w-full bg-indigo-600 text-white py-2 rounded-md font-medium hover:bg-indigo-700 transition text-center"
                 >
                   Buy Now
                 </Link>

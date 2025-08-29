@@ -8,10 +8,9 @@ export default function Header() {
     <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="mx-auto max-w-[1920px] px-8 py-4 flex items-center justify-between">
         <Link href="/" className="text-2xl font-extrabold text-indigo-700">
-          BrandLogo
+          <img src="/brandLogo-updated.png" alt="Brand Logo" className="w-24" />
         </Link>
 
-        {/* Menu */}
         <nav className="hidden md:flex items-center gap-8 md:gap-20 text-gray-700 font-medium">
           <Link
             href="/chat"
@@ -39,7 +38,6 @@ export default function Header() {
           </Link>
         </nav>
 
-        {/* Social Icons */}
         <div className="flex items-center gap-4 md:gap-6 text-indigo-600">
           <a
             href="https://facebook.com"

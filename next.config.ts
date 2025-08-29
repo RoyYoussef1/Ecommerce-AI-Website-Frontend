@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    // الدومينات المسموح تجيب منها صور
+    domains: ["localhost"], 
+  },
 };
 
 export default nextConfig;
