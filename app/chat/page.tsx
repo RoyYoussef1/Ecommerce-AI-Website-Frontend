@@ -1,4 +1,4 @@
-"use client"; // 👈 add this line at the very top
+"use client"; 
 
 import Link from "next/link";
 import { useState } from "react";
@@ -32,9 +32,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-[80vh]">
-      {/* Messages container */}
       <div className="flex-1 relative overflow-y-auto p-6 space-y-6">
-        {/* Welcome Screen */}
         {messages.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
             <h1 className="text-2xl md:text-3xl font-semibold text-gray-700 animate-fadeIn">
@@ -51,7 +49,7 @@ export default function ChatPage() {
             }`}
           >
             <div
-              className={`max-w-lg px-5 py-3 rounded-2xl shadow-xl backdrop-blur-md transition transform hover:scale-[1.01] ${
+              className={`max-w-3xl px-5 py-3 rounded-2xl shadow-xl backdrop-blur-md transition transform hover:scale-[1.01] ${
                 m.role === "user"
                   ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-none"
                   : "bg-white/70 border border-gray-200 text-gray-800 rounded-bl-none"
@@ -59,9 +57,8 @@ export default function ChatPage() {
             >
               <p className="whitespace-pre-wrap leading-relaxed">{m.content}</p>
 
-              {/* Products list */}
               {m.products?.length > 0 && (
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {m.products.map((p: any, idx: number) => (
                     <Link
                       key={p.slug || p.uid || idx}
@@ -71,7 +68,7 @@ export default function ChatPage() {
                       <img
                         src={`http://localhost:1337${p.image.url}`}
                         alt={p.title}
-                        className="w-full h-32 object-cover rounded-md mb-2"
+                        className="w-full h-60 object-cover rounded-md mb-2"
                       />
                       <h4 className="font-semibold text-sm text-gray-800">
                         {p.title || p.uid}
@@ -88,7 +85,6 @@ export default function ChatPage() {
         ))}
       </div>
 
-      {/* Input bar */}
       <div className="p-4 border-t bg-white/80 backdrop-blur-md flex items-center gap-3 shadow-lg">
         <input
           value={input}

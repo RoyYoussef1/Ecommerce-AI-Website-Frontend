@@ -1,4 +1,3 @@
-// app/products/ProductCard.tsx (Client Component)
 "use client";
 
 import Link from "next/link";
