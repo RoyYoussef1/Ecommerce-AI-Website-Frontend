@@ -5,6 +5,7 @@ import { AiOutlineHeart } from "react-icons/ai";
 import { BiShoppingBag } from "react-icons/bi";
 import Rater from "react-rater";
 import "react-rater/lib/react-rater.css";
+import { useCart } from "../../../components/CartContext";
 
 export default function ProductDetail({
   product,
@@ -14,10 +15,22 @@ export default function ProductDetail({
   recommended: any[];
 }) {
   const [activeImage, setActiveImage] = useState(product.mainImage);
+  const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
 
   const plusMinusButton =
     "flex h-8 w-8 cursor-pointer items-center justify-center border duration-100 hover:bg-neutral-100 focus:ring-2 focus:ring-gray-500 active:ring-2 active:ring-gray-500";
-
+  const handleAddToCart = () => {
+    addToCart({
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      slug: product.slug,
+      image: product.mainImage,
+      quantity,
+    });
+    console.log("Added to cart");
+  };
   return (
     <div>
       <section className="container mx-auto max-w-[1200px] border-b py-5 lg:grid lg:grid-cols-2 lg:py-10 gap-6">
@@ -81,16 +94,29 @@ export default function ProductDetail({
           <div className="mt-6">
             <p className="pb-2 text-xs text-gray-500">Quantity</p>
             <div className="flex">
-              <button className={plusMinusButton}>−</button>
+              <button
+                className={plusMinusButton}
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              >
+                −
+              </button>
               <div className="flex h-8 w-8 items-center justify-center border-t border-b">
-                1
+                {quantity}
               </div>
-              <button className={plusMinusButton}>+</button>
+              <button
+                className={plusMinusButton}
+                onClick={() => setQuantity((q) => q + 1)}
+              >
+                +
+              </button>
             </div>
           </div>
 
           <div className="mt-7 flex gap-6">
-            <button className="flex-1 flex h-12 items-center justify-center bg-violet-900 text-white hover:bg-blue-800 cursor-pointer">
+            <button
+              onClick={handleAddToCart}
+              className="flex-1 flex h-12 items-center justify-center bg-violet-900 text-white hover:bg-blue-800 cursor-pointer"
+            >
               <BiShoppingBag className="mr-2" /> Add to cart
             </button>
             <button className="flex-1 flex h-12 items-center justify-center bg-amber-400 hover:bg-yellow-300 cursor-pointer">

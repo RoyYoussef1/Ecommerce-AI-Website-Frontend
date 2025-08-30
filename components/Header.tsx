@@ -1,9 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { BiShoppingBag } from "react-icons/bi";
 import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
+import { useCart } from "./CartContext";
+
+type CartItem = {
+  id: string;
+  name: string;
+  quantity: number;
+};
 
 export default function Header() {
+  const { cart } = useCart();
+  const totalItems = cart.reduce((sum: number, item: CartItem) => sum + item.quantity, 0);
+
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="mx-auto max-w-[1920px] px-8 py-2 flex items-center justify-between">
@@ -32,9 +43,15 @@ export default function Header() {
           </Link>
           <Link
             href="/cart"
-            className="hover:text-indigo-600 transition-colors"
+            className="relative hover:text-indigo-600 transition-colors flex items-center gap-2"
           >
-            Cart
+            <BiShoppingBag size={26} className="text-indigo-700" />
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                {totalItems}
+              </span>
+            )}
+            <span className="hidden md:inline">Cart</span>
           </Link>
         </nav>
 
