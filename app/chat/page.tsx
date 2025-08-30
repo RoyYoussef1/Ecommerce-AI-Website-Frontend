@@ -1,11 +1,13 @@
-"use client"; 
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
+import { useCart } from "../../components/CartContext";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
+  const { addToCart } = useCart();
 
   async function sendMessage() {
     if (!input.trim()) return;
@@ -60,23 +62,39 @@ export default function ChatPage() {
               {m.products?.length > 0 && (
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {m.products.map((p: any, idx: number) => (
-                    <Link
+                    <div
                       key={p.slug || p.uid || idx}
-                      href={`/products/${p.slug}`}
-                      className="block p-4 rounded-xl shadow-md bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-lg hover:bg-gray-200 transition"
+                      className="p-4 rounded-xl shadow-md bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-lg transition"
                     >
                       <img
                         src={`http://localhost:1337${p.image.url}`}
                         alt={p.title}
-                        className="w-full h-60 object-cover rounded-md mb-2"
+                        className="w-full h-48 object-contain rounded-md mb-2"
                       />
-                      <h4 className="font-semibold text-sm text-gray-800">
+                      <h4 className="font-semibold text-sm text-gray-800 truncate">
                         {p.title || p.uid}
                       </h4>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-sm text-gray-500 mt-1">
                         Similarity: {p.similarity?.toFixed(2)}
                       </p>
-                    </Link>
+
+                      <div className="mt-3 w-full">
+                        <button
+                          onClick={() =>
+                            addToCart({
+                              id: p.id,
+                              title: p.title,
+                              price: p.price,
+                              image: p.image.url,
+                              quantity: 1,
+                            })
+                          }
+                          className="p-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-center cursor-pointer w-full"
+                        >
+                          Add To Cart
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}

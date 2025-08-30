@@ -98,9 +98,12 @@ export default function CartPage() {
         <h2 className="text-xl font-bold">
           Total: <span className="text-violet-900">${totalPrice.toFixed(2)}</span>
         </h2>
-        <button className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700">
-          Checkout
-        </button>
+        <Link
+          href="/checkout"
+          className="bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 transition"
+        >
+          Proceed to Checkout
+        </Link>
       </div>
     </div>
   );

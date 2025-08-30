@@ -1,49 +1,80 @@
 "use client";
-import { createContext, useContext, useState, useEffect } from "react";
 
-const CartContext = createContext<any>(null);
+import { createContext, useContext, useState } from "react";
 
-export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cart, setCart] = useState<any[]>([]);
+type CartItem = {
+  id: number;
+  title: string;
+  price: number;
+  quantity: number;
+  image?: string;
+};
 
-  useEffect(() => {
-    const saved = localStorage.getItem("cart");
-    if (saved) setCart(JSON.parse(saved));
-  }, []);
+type CartContextType = {
+  cart: CartItem[];
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (id: number) => void;
+  updateQuantity: (id: number, qty: number) => void;
+  clearCart: () => void;
+  notification: string | null; // 👈 added
+  setNotification: (msg: string | null) => void; // 👈 added
+};
 
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
-  const addToCart = (product: any) => {
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [notification, setNotification] = useState<string | null>(null); // 👈
+
+  function addToCart(item: CartItem) {
     setCart((prev) => {
-      const exists = prev.find((p) => p.id === product.id);
-      if (exists) {
+      const existing = prev.find((p) => p.id === item.id);
+      if (existing) {
         return prev.map((p) =>
-          p.id === product.id
-            ? { ...p, quantity: p.quantity + product.quantity }
-            : p
+          p.id === item.id ? { ...p, quantity: p.quantity + item.quantity } : p
         );
       }
-      return [...prev, product];
+      return [...prev, item];
     });
-  };
 
-  const removeFromCart = (id: number) =>
+    // show notification when adding
+    setNotification(`${item.title} added to cart 🎉`);
+    setTimeout(() => setNotification(null), 3000); // auto-hide
+  }
+
+  function removeFromCart(id: number) {
     setCart((prev) => prev.filter((p) => p.id !== id));
+  }
 
-  const updateQuantity = (id: number, qty: number) =>
+  function updateQuantity(id: number, qty: number) {
     setCart((prev) =>
       prev.map((p) => (p.id === id ? { ...p, quantity: qty } : p))
     );
+  }
+
+  function clearCart() {
+    setCart([]);
+  }
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity }}
+      value={{
+        cart,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        notification,
+        setNotification,
+      }}
     >
       {children}
     </CartContext.Provider>
   );
-};
+}
 
-export const useCart = () => useContext(CartContext);
+export function useCart() {
+  const ctx = useContext(CartContext);
+  if (!ctx) throw new Error("useCart must be used within CartProvider");
+  return ctx;
+}
