@@ -28,12 +28,6 @@ export default function HomePage() {
             >
               Try the Chatbot
             </Link>
-            <Link
-              href="/products"
-              className="px-8 py-3 bg-pink-600 hover:bg-pink-700 text-white text-lg font-semibold rounded-full shadow-lg transition"
-            >
-              Browse Products
-            </Link>
           </div>
         </div>
       </section>

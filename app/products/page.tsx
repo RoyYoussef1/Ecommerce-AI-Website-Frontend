@@ -3,22 +3,34 @@ import { AiOutlineHeart } from "react-icons/ai";
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 
-async function getProducts() {
+async function getProducts(page: number = 1, pageSize: number = 6) {
   try {
-    const res = await fetch(`${STRAPI_URL}/api/products`, { cache: "no-store" });
-    if (!res.ok) return [];
+    const res = await fetch(
+      `${STRAPI_URL}/api/products?pagination[page]=${page}&pagination[pageSize]=${pageSize}`,
+      { cache: "no-store" }
+    );
+    if (!res.ok) return { products: [] };
     const data = await res.json();
-    return Array.isArray(data) ? data : data.data || [];
+    return {
+      products: Array.isArray(data) ? data : data.data || [],
+    };
   } catch (err) {
     console.error("❌ Error fetching products:", err);
-    return [];
+    return { products: [] };
   }
 }
 
-export default async function ProductsPage() {
-  const products = await getProducts();
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams?: { page?: string };
+}) {
+  const page = Number(searchParams?.page) || 1;
+  const pageSize = 6;
 
-  if (products.length === 0) {
+  const { products } = await getProducts(page, pageSize);
+
+  if (!products || products.length === 0) {
     return <p className="p-6 text-red-600">No products found.</p>;
   }
 
@@ -47,7 +59,6 @@ export default async function ProductsPage() {
                   </div>
                 )}
               </div>
-
               <div className="flex-1 p-5">
                 <h2 className="text-xl font-bold text-gray-800">{p.title}</h2>
                 {p.short_desc && (
@@ -58,12 +69,9 @@ export default async function ProductsPage() {
                   <span className="ml-2 text-sm text-gray-500">289 reviews</span>
                 </div>
               </div>
-
               <div className="md:w-1/4 border-t md:border-t-0 md:border-l flex flex-col justify-center p-5 space-y-3 md:text-center">
                 <div className="pb-2">
-                  <span className="text-indigo-700 font-extrabold text-xl">
-                    ${p.price}
-                  </span>
+                  <span className="text-indigo-700 font-extrabold text-xl">${p.price}</span>
                   <p className="text-sm text-gray-500 line-through">${p.price * 1.25}</p>
                   <p className="text-green-600 text-sm">Free Shipping</p>
                 </div>
@@ -82,6 +90,26 @@ export default async function ProductsPage() {
             </div>
           );
         })}
+      </div>
+
+      <div className="flex justify-between mt-6">
+        <Link
+          href={`/products?page=${page - 1}`}
+          className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition ${
+            page <= 1 ? "pointer-events-none opacity-50" : ""
+          }`}
+        >
+          Previous
+        </Link>
+
+        <Link
+          href={`/products?page=${page + 1}`}
+          className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition ${
+            products.length < pageSize ? "pointer-events-none opacity-50" : ""
+          }`}
+        >
+          Next
+        </Link>
       </div>
     </div>
   );
