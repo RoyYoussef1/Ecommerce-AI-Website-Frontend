@@ -50,6 +50,19 @@ export default function ChatPage() {
       );
     });
 
+    eventSource.addEventListener("cart", (e: any) => {
+      const { added } = JSON.parse(e.data);
+      if (added) {
+        addToCart({
+          id: added.id,
+          title: added.title,
+          price: added.price,
+          image: added.image?.url || added.image,
+          quantity: 1,
+        });
+      }
+    });
+
     eventSource.addEventListener("done", () => {
       eventSource.close();
     });
@@ -80,37 +93,35 @@ export default function ChatPage() {
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {m.products.map((p: any) => (
                     <Link key={p.id} href={`/products/${p.slug}`}>
-                      <div
-                        className="p-4 rounded-xl shadow-md bg-gray-50 hover:shadow-lg transition"
-                      >
+                      <div className="p-4 rounded-xl shadow-md bg-gray-50 hover:shadow-lg transition">
                         <img
-                        src={`http://localhost:1337${p.image.url}`}
-                        alt={p.title}
-                        className="w-full h-48 object-contain rounded-md mb-2"
-                      />
-                      <h4 className="font-semibold text-sm">{p.title}</h4>
+                          src={`http://localhost:1337${p.image.url}`}
+                          alt={p.title}
+                          className="w-full h-48 object-contain rounded-md mb-2"
+                        />
+                        <h4 className="font-semibold text-sm">{p.title}</h4>
 
-                      {typeof p.similarity === "number" && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Similarity: {(p.similarity * 100).toFixed(2)}%
-                        </p>
-                      )}
+                        {typeof p.similarity === "number" && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Similarity: {(p.similarity * 100).toFixed(2)}%
+                          </p>
+                        )}
 
-                      <button
-                        onClick={() =>
-                          addToCart({
-                            id: p.id,
-                            title: p.title,
-                            price: p.price,
-                            image: p.image.url,
-                            quantity: 1,
-                          })
-                        }
-                        className="mt-2 w-full py-2 bg-indigo-600 text-white rounded-md"
-                      >
-                        Add To Cart
-                      </button>
-                    </div>
+                        <button
+                          onClick={() =>
+                            addToCart({
+                              id: p.id,
+                              title: p.title,
+                              price: p.price,
+                              image: p.image.url,
+                              quantity: 1,
+                            })
+                          }
+                          className="mt-2 w-full py-2 bg-indigo-600 text-white rounded-md cursor-pointer"
+                        >
+                          Add To Cart
+                        </button>
+                      </div>
                     </Link>
                   ))}
                 </div>
