@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useCart } from "../../components/CartContext";
+import Link from "next/link";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<any[]>([]);
@@ -13,36 +13,53 @@ export default function ChatPage() {
     if (!input.trim()) return;
 
     const userMsg = { role: "user", content: input };
-    const history = messages.map((m) => ({ role: m.role, content: m.content }));
     setMessages((prev) => [...prev, userMsg]);
-    setInput("");
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: input, history }),
+    const assistantIndex = messages.length + 1;
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: "", products: [] },
+    ]);
+
+    const history = [...messages, userMsg].map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    const eventSource = new EventSource(
+      "/api/chat/stream?" +
+        new URLSearchParams({
+          prompt: input,
+          history: JSON.stringify(history),
+        })
+    );
+
+    eventSource.addEventListener("token", (e: any) => {
+      const { token } = JSON.parse(e.data);
+      setMessages((prev) =>
+        prev.map((m, i) =>
+          i === assistantIndex ? { ...m, content: m.content + token } : m
+        )
+      );
     });
 
-    const data = await res.json();
-    const botMsg = {
-      role: "assistant",
-      content: data.message,
-      products: data.products,
-    };
-    setMessages((prev) => [...prev, botMsg]);
+    eventSource.addEventListener("products", (e: any) => {
+      const products = JSON.parse(e.data);
+      setMessages((prev) =>
+        prev.map((m, i) => (i === assistantIndex ? { ...m, products } : m))
+      );
+    });
+
+    eventSource.addEventListener("done", () => {
+      eventSource.close();
+    });
+
+    setInput("");
   }
 
   return (
     <div className="flex flex-col h-[80vh]">
-      <div className="flex-1 relative overflow-y-auto p-6 space-y-6">
-        {messages.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <h1 className="text-2xl md:text-3xl font-semibold text-gray-700 animate-fadeIn">
-              What’s on the agenda today?
-            </h1>
-          </div>
-        )}
-
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {messages.map((m, i) => (
           <div
             key={i}
@@ -51,50 +68,50 @@ export default function ChatPage() {
             }`}
           >
             <div
-              className={`max-w-3xl px-5 py-3 rounded-2xl shadow-xl backdrop-blur-md transition transform hover:scale-[1.01] ${
+              className={`max-w-3xl px-5 py-3 rounded-2xl shadow-md ${
                 m.role === "user"
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-none"
-                  : "bg-white/70 border border-gray-200 text-gray-800 rounded-bl-none"
+                  ? "bg-indigo-600 text-white rounded-br-none"
+                  : "bg-white border text-gray-800 rounded-bl-none"
               }`}
             >
-              <p className="whitespace-pre-wrap leading-relaxed">{m.content}</p>
+              <p className="whitespace-pre-wrap">{m.content}</p>
 
               {m.products?.length > 0 && (
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {m.products.map((p: any, idx: number) => (
-                    <div
-                      key={p.slug || p.uid || idx}
-                      className="p-4 rounded-xl shadow-md bg-gradient-to-br from-gray-50 to-gray-100 hover:shadow-lg transition"
-                    >
-                      <img
+                  {m.products.map((p: any) => (
+                    <Link key={p.id} href={`/products/${p.slug}`}>
+                      <div
+                        className="p-4 rounded-xl shadow-md bg-gray-50 hover:shadow-lg transition"
+                      >
+                        <img
                         src={`http://localhost:1337${p.image.url}`}
                         alt={p.title}
                         className="w-full h-48 object-contain rounded-md mb-2"
                       />
-                      <h4 className="font-semibold text-sm text-gray-800 truncate">
-                        {p.title || p.uid}
-                      </h4>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Similarity: {p.similarity?.toFixed(2)}
-                      </p>
+                      <h4 className="font-semibold text-sm">{p.title}</h4>
 
-                      <div className="mt-3 w-full">
-                        <button
-                          onClick={() =>
-                            addToCart({
-                              id: p.id,
-                              title: p.title,
-                              price: p.price,
-                              image: p.image.url,
-                              quantity: 1,
-                            })
-                          }
-                          className="p-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-center cursor-pointer w-full"
-                        >
-                          Add To Cart
-                        </button>
-                      </div>
+                      {typeof p.similarity === "number" && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Similarity: {(p.similarity * 100).toFixed(2)}%
+                        </p>
+                      )}
+
+                      <button
+                        onClick={() =>
+                          addToCart({
+                            id: p.id,
+                            title: p.title,
+                            price: p.price,
+                            image: p.image.url,
+                            quantity: 1,
+                          })
+                        }
+                        className="mt-2 w-full py-2 bg-indigo-600 text-white rounded-md"
+                      >
+                        Add To Cart
+                      </button>
                     </div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -103,17 +120,17 @@ export default function ChatPage() {
         ))}
       </div>
 
-      <div className="p-4 border-t bg-white/80 backdrop-blur-md flex items-center gap-3 shadow-lg">
+      <div className="p-4 border-t flex items-center gap-3">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder="Type your message..."
-          className="flex-1 px-5 py-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50"
+          className="flex-1 px-4 py-2 border rounded-full focus:ring-2 focus:ring-indigo-500"
         />
         <button
           onClick={sendMessage}
-          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full hover:from-blue-700 hover:to-indigo-700 transition shadow-md"
+          className="px-6 py-2 bg-indigo-600 text-white rounded-full"
         >
           Send
         </button>

@@ -94,7 +94,7 @@ export default async function StorePage() {
                     target="_blank"
                     className="mt-auto inline-block text-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-full shadow hover:shadow-lg transform hover:scale-105 transition-all"
                   >
-                    Visit Website 🚀
+                    Visit Store 🚀
                   </Link>
                 )}
               </div>
