@@ -6,7 +6,6 @@ export async function GET(req: NextRequest) {
     const prompt = searchParams.get("prompt") || "";
     const history = searchParams.get("history") || "[]";
 
-    // Forward to Express backend (POST) while we expose GET here for EventSource
     const backendRes = await fetch("http://localhost:3001/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -20,7 +19,6 @@ export async function GET(req: NextRequest) {
       return new Response("Backend failed", { status: 500 });
     }
 
-    // Pipe backend stream → client
     return new Response(backendRes.body, {
       headers: {
         "Content-Type": "text/event-stream",

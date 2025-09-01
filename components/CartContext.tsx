@@ -16,15 +16,15 @@ type CartContextType = {
   removeFromCart: (id: number) => void;
   updateQuantity: (id: number, qty: number) => void;
   clearCart: () => void;
-  notification: string | null; // 👈 added
-  setNotification: (msg: string | null) => void; // 👈 added
+  notification: string | null; 
+  setNotification: (msg: string | null) => void; 
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [notification, setNotification] = useState<string | null>(null); // 👈
+  const [notification, setNotification] = useState<string | null>(null);
 
   function addToCart(item: CartItem) {
     setCart((prev) => {
@@ -37,9 +37,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [...prev, item];
     });
 
-    // show notification when adding
     setNotification(`${item.title} added to cart 🎉`);
-    setTimeout(() => setNotification(null), 3000); // auto-hide
+    setTimeout(() => setNotification(null), 3000); 
   }
 
   function removeFromCart(id: number) {
