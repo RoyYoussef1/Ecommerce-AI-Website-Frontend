@@ -63,6 +63,11 @@ export default function ChatPage() {
       }
     });
 
+    eventSource.addEventListener("navigate", (e: any) => {
+      const { url } = JSON.parse(e.data);
+      window.location.href = url; 
+    });
+
     eventSource.addEventListener("done", () => {
       eventSource.close();
     });
