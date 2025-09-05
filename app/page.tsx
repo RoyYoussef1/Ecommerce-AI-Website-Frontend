@@ -1,6 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-
+export async function generateMetadata() {
+  return {
+    title: 'Ecommerce Chatbot',
+    description: 'Ecommerce Chatbot',
+  };
+}
 export default function HomePage() {
   return (
     <div className="bg-gradient-to-br from-gray-50 to-indigo-50">

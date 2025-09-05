@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../components/CartContext";
-
+export async function generateMetadata() {
+  return {
+    title: 'Ecommerce Chatbot',
+    description: 'Ecommerce Chatbot',
+  };
+}
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
   const [form, setForm] = useState({ name: "", email: "", address: "" });

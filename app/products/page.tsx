@@ -2,7 +2,12 @@ import Link from "next/link";
 import { AiOutlineHeart } from "react-icons/ai";
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
-
+export async function generateMetadata() {
+  return {
+    title: 'Ecommerce Chatbot',
+    description: 'Ecommerce Chatbot',
+  };
+}
 async function getProducts(page: number = 1, pageSize: number = 6) {
   try {
     const res = await fetch(

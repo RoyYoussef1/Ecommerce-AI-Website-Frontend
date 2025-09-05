@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation";
 import ProductDetail from "./productDetails";
-
+export async function generateMetadata() {
+  return {
+    title: 'Ecommerce Chatbot',
+    description: 'Ecommerce Chatbot',
+  };
+}
 const STRAPI_URL = process.env.STRAPI_URL || "http://localhost:1337";
 
 async function getProduct(slug: string) {
