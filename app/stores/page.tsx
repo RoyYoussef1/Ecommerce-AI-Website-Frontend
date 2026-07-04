@@ -1,7 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
+import { HiArrowUpRight } from "react-icons/hi2";
 
 const STRAPI_URL = process.env.STRAPI_URL || "http://localhost:1337";
+
+export async function generateMetadata() {
+  return {
+    title: "Stores — NOVA",
+    description: "Find our partner stores",
+  };
+}
 
 async function getStores() {
   try {
@@ -26,75 +34,86 @@ export default async function StorePage() {
   const stores = await getStores();
 
   if (stores.length === 0) {
-    return <p className="p-6 text-red-600">No stores found.</p>;
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-6">
+        <h2 className="font-display text-2xl font-bold text-white mb-2">
+          No stores found
+        </h2>
+        <p className="text-slate-400">Please check back soon.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50 py-16 px-6 md:px-12">
-      <h1 className="text-3xl md:text-4xl font-extrabold text-center mb-16 text-indigo-800 tracking-tight">
-        🏬 Our Stores
-      </h1>
+    <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
+      <div className="text-center mb-14 animate-fade-up">
+        <h1 className="font-display text-3xl md:text-5xl font-bold text-white mb-3">
+          Our <span className="text-gradient">Stores</span>
+        </h1>
+        <p className="text-slate-400 max-w-xl mx-auto">
+          Visit our partner locations and experience the products in person.
+        </p>
+      </div>
 
-      <div className="grid gap-12 md:grid-cols-2 xl:grid-cols-3 max-w-[1600px] mx-auto">
-        {stores.map((store: any, idx: number) => {
+      <div className="stagger grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {stores.map((store: any) => {
           const logoUrl = store.logo
-            ? `${STRAPI_URL}${
-                store.logo.formats?.medium?.url || store.logo.url
-              }`
+            ? `${STRAPI_URL}${store.logo.formats?.medium?.url || store.logo.url}`
             : null;
 
           const description =
             store.description?.[0]?.children?.[0]?.text || "No description";
 
           return (
-            <div
-              key={store.id}
-              className="group bg-white shadow-md hover:shadow-2xl rounded-3xl overflow-hidden border border-gray-100 flex flex-col transform transition-all duration-500 hover:-translate-y-2 animate-fade-up"
-              style={{ animationDelay: `${idx * 100}ms`, animationFillMode: "forwards" }}
-            >
-              <div className="relative w-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-indigo-50 p-6">
+            <div key={store.id} className="glass-card flex flex-col overflow-hidden">
+              <div className="flex items-center justify-center bg-gradient-to-br from-indigo-500/10 to-purple-500/10 p-8">
                 {logoUrl ? (
-                  <div className="w-32 h-32 rounded-full bg-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-500">
+                  <div className="flex h-28 w-28 items-center justify-center rounded-full bg-white shadow-xl shadow-indigo-500/20">
                     <Image
                       src={logoUrl}
-                      width={100}
-                      height={100}
+                      width={90}
+                      height={90}
                       alt={store.name}
-                      className="object-contain w-24 h-24"
+                      className="h-20 w-20 object-contain"
                     />
                   </div>
                 ) : (
-                  <div className="text-gray-500">No Logo</div>
+                  <div className="flex h-28 w-28 items-center justify-center rounded-full glass text-slate-500 text-sm">
+                    No Logo
+                  </div>
                 )}
               </div>
 
-              <div className="p-8 flex flex-col flex-grow">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-indigo-700 transition-colors">
+              <div className="flex flex-col flex-grow p-7">
+                <h2 className="font-display text-xl font-bold text-white mb-3">
                   {store.name}
                 </h2>
 
-                <p className="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-5">
+                <p className="text-slate-400 text-sm leading-relaxed mb-5 line-clamp-4">
                   {description}
                 </p>
 
-                <div className="flex flex-wrap gap-3 mb-6">
-                  {store.types?.map((t: any) => (
-                    <span
-                      key={t.id}
-                      className="px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 shadow-sm hover:bg-indigo-200 transition"
-                    >
-                      #{t.name}
-                    </span>
-                  ))}
-                </div>
+                {store.types?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {store.types.map((t: any) => (
+                      <span
+                        key={t.id}
+                        className="rounded-full glass px-3 py-1 text-xs font-medium text-indigo-200"
+                      >
+                        #{t.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 {store.websiteLink && (
                   <Link
                     href={store.websiteLink}
                     target="_blank"
-                    className="mt-auto inline-block text-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold rounded-full shadow hover:shadow-lg transform hover:scale-105 transition-all"
+                    className="btn-neon mt-auto w-full py-2.5 text-sm"
                   >
-                    Visit Store 🚀
+                    Visit Store
+                    <HiArrowUpRight size={14} />
                   </Link>
                 )}
               </div>

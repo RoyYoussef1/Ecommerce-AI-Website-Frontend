@@ -1,13 +1,15 @@
 import Link from "next/link";
-import { AiOutlineHeart } from "react-icons/ai";
+import { HiArrowLeft, HiArrowRight, HiStar } from "react-icons/hi2";
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+
 export async function generateMetadata() {
   return {
-    title: 'Ecommerce Chatbot',
-    description: 'Ecommerce Chatbot',
+    title: "Products — NOVA",
+    description: "Browse our curated collection",
   };
 }
+
 async function getProducts(page: number = 1, pageSize: number = 6) {
   try {
     const res = await fetch(
@@ -36,84 +38,118 @@ export default async function ProductsPage({
   const { products } = await getProducts(page, pageSize);
 
   if (!products || products.length === 0) {
-    return <p className="p-6 text-red-600">No products found.</p>;
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-6">
+        <h2 className="font-display text-2xl font-bold text-white mb-2">
+          No products found
+        </h2>
+        <p className="text-slate-400">Please check back soon.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 md:p-12">
-      <div className="bg-gradient-to-br from-indigo-700 to-purple-700 text-white rounded-xl shadow-md mb-10 p-8 text-center">
-        <h1 className="text-3xl font-bold mb-2">Welcome to Our Shopping Page!</h1>
-        <p className="text-lg">Select from a wide variety of amazing products 🎉</p>
+    <div className="mx-auto max-w-6xl px-6 py-12 md:py-16">
+      <div className="text-center mb-12 animate-fade-up">
+        <h1 className="font-display text-3xl md:text-5xl font-bold text-white mb-3">
+          The <span className="text-gradient">Collection</span>
+        </h1>
+        <p className="text-slate-400 max-w-xl mx-auto">
+          Curated products across fashion, electronics, and more — or ask the
+          AI assistant to find your perfect match.
+        </p>
       </div>
 
-      <div className="space-y-8">
+      <div className="stagger space-y-5">
         {products.map((p: any) => {
           const imgUrl = p.mainImage?.url ? `${STRAPI_URL}${p.mainImage.url}` : null;
 
           return (
             <div
               key={p.id}
-              className="flex flex-col md:flex-row bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
+              className="glass-card flex flex-col md:flex-row overflow-hidden !rounded-3xl"
             >
-              <div className="md:w-1/5 flex items-center justify-center md:border-r border-r-0 border-b md:border-b-0">
+              <Link
+                href={`/products/${p.slug}`}
+                className="md:w-1/4 flex items-center justify-center bg-white/[0.03] p-6"
+              >
                 {imgUrl ? (
-                  <img src={imgUrl} alt={p.title} className="object-contain h-80 w-full" />
+                  <img
+                    src={imgUrl}
+                    alt={p.title}
+                    className="h-52 w-full object-contain transition-transform duration-500 hover:scale-105"
+                  />
                 ) : (
-                  <div className="h-48 w-full flex items-center justify-center text-gray-500">
+                  <div className="h-52 w-full flex items-center justify-center text-slate-500">
                     No Image
                   </div>
                 )}
-              </div>
-              <div className="flex-1 p-5">
-                <h2 className="text-xl font-bold text-gray-800">{p.title}</h2>
+              </Link>
+
+              <div className="flex-1 p-6 md:p-8 flex flex-col justify-center">
+                <Link href={`/products/${p.slug}`}>
+                  <h2 className="font-display text-xl md:text-2xl font-bold text-white hover:text-indigo-300 transition">
+                    {p.title}
+                  </h2>
+                </Link>
                 {p.short_desc && (
-                  <p className="text-gray-600 mt-2 md:block hidden">{p.short_desc}</p>
+                  <p className="text-slate-400 text-sm mt-2 leading-relaxed hidden md:block">
+                    {p.short_desc}
+                  </p>
                 )}
-                <div className="flex items-center mt-1.5 md:mt-3">
-                  <span className="text-green-600 font-semibold">★ ★ ★ ★ ☆</span>
-                  <span className="ml-2 text-sm text-gray-500">289 reviews</span>
+                <div className="flex items-center gap-1.5 mt-3">
+                  <span className="flex text-amber-400">
+                    <HiStar /><HiStar /><HiStar /><HiStar />
+                    <HiStar className="text-slate-600" />
+                  </span>
+                  <span className="text-xs text-slate-500">289 reviews</span>
                 </div>
               </div>
-              <div className="md:w-1/4 border-t md:border-t-0 md:border-l flex flex-col justify-center p-5 space-y-3 md:text-center">
-                <div className="pb-2">
-                  <span className="text-indigo-700 font-extrabold text-xl">${p.price}</span>
-                  <p className="text-sm text-gray-500 line-through">${p.price * 1.25}</p>
-                  <p className="text-green-600 text-sm">Free Shipping</p>
+
+              <div className="md:w-1/4 border-t md:border-t-0 md:border-l border-white/[0.06] p-6 md:p-8 flex flex-col justify-center gap-4 text-center">
+                <div>
+                  <span className="font-display text-3xl font-bold text-gradient">
+                    ${p.price}
+                  </span>
+                  <p className="text-sm text-slate-500 line-through">
+                    ${(p.price * 1.25).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-cyan-300 mt-1">Free Shipping</p>
                 </div>
 
                 <Link
                   href={`/products/${p.slug}`}
-                  className="block w-full bg-indigo-600 text-white py-2 rounded-md font-medium hover:bg-indigo-700 transition text-center"
+                  className="btn-neon w-full py-2.5 text-sm"
                 >
-                  Buy Now
+                  View Product
                 </Link>
-                <button className="flex items-center justify-center gap-2 w-full border border-indigo-600 text-indigo-600 py-2 rounded-md hover:bg-indigo-50 transition">
-                  <AiOutlineHeart size={18} />
-                  Add to Cart
-                </button>
               </div>
             </div>
           );
         })}
       </div>
 
-      <div className="flex justify-between mt-6">
+      <div className="flex justify-between items-center mt-10">
         <Link
           href={`/products?page=${page - 1}`}
-          className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition ${
-            page <= 1 ? "pointer-events-none opacity-50" : ""
+          className={`btn-ghost px-6 py-2.5 text-sm ${
+            page <= 1 ? "pointer-events-none opacity-40" : ""
           }`}
         >
+          <HiArrowLeft size={16} />
           Previous
         </Link>
 
+        <span className="text-sm text-slate-500">Page {page}</span>
+
         <Link
           href={`/products?page=${page + 1}`}
-          className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition ${
-            products.length < pageSize ? "pointer-events-none opacity-50" : ""
+          className={`btn-ghost px-6 py-2.5 text-sm ${
+            products.length < pageSize ? "pointer-events-none opacity-40" : ""
           }`}
         >
           Next
+          <HiArrowRight size={16} />
         </Link>
       </div>
     </div>

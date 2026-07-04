@@ -1,16 +1,18 @@
+import Link from "next/link";
+
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center h-[90dvh] bg-gray-50 text-center px-6">
-      <h1 className="text-6xl font-extrabold text-indigo-700 mb-4">404</h1>
-      <p className="text-lg text-gray-600 mb-6">
-        Oops! The page you’re looking for doesn’t exist.
+    <div className="flex min-h-[80dvh] flex-col items-center justify-center text-center px-6 animate-fade-up">
+      <h1 className="font-display text-8xl md:text-9xl font-bold text-gradient mb-4">
+        404
+      </h1>
+      <p className="font-display text-xl text-white mb-2">Lost in space</p>
+      <p className="text-slate-400 mb-8 max-w-sm">
+        The page you&apos;re looking for drifted out of orbit.
       </p>
-      <a
-        href="/"
-        className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition"
-      >
+      <Link href="/" className="btn-neon px-8 py-3 text-sm">
         Back to Home
-      </a>
+      </Link>
     </div>
   );
 }
