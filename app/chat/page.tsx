@@ -105,6 +105,9 @@ export default function ChatPage() {
                           className="w-full h-48 object-contain rounded-md mb-2"
                         />
                         <h4 className="font-semibold text-sm">{p.title}</h4>
+                        <p className="text-sm font-medium text-indigo-600 mt-1">
+                          ${Number(p.price).toFixed(2)}
+                        </p>
 
                         {typeof p.similarity === "number" && (
                           <p className="text-xs text-gray-500 mt-1">

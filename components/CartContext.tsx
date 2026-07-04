@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 type CartItem = {
   id: number;
@@ -16,8 +16,8 @@ type CartContextType = {
   removeFromCart: (id: number) => void;
   updateQuantity: (id: number, qty: number) => void;
   clearCart: () => void;
-  notification: string | null; 
-  setNotification: (msg: string | null) => void; 
+  notification: string | null;
+  setNotification: (msg: string | null) => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -25,6 +25,17 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedCart = sessionStorage.getItem("cart");
+    if (storedCart) {
+      setCart(JSON.parse(storedCart));
+    }
+  }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
 
   function addToCart(item: CartItem) {
     setCart((prev) => {
@@ -38,7 +49,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
 
     setNotification(`${item.title} added to cart 🎉`);
-    setTimeout(() => setNotification(null), 3000); 
+    setTimeout(() => setNotification(null), 3000);
   }
 
   function removeFromCart(id: number) {

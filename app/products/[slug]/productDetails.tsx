@@ -119,9 +119,6 @@ export default function ProductDetail({
             >
               <BiShoppingBag className="mr-2" /> Add to cart
             </button>
-            <button className="flex-1 flex h-12 items-center justify-center bg-amber-400 hover:bg-yellow-300 cursor-pointer">
-              <AiOutlineHeart className="mr-2" /> Wishlist
-            </button>
           </div>
         </div>
       </section>
