@@ -1,3 +1,4 @@
+import AuthProvider from "../components/AuthProvider";
 import { CartProvider } from "../components/CartContext";
 import CartNotification from "../components/CartNotification";
 import Header from "../components/Header";
@@ -22,11 +23,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <div className="ambient-bg" />
         <div className="ambient-grid" />
-        <CartProvider>
-          <CartNotification />
-          <Header />
-          <main>{children}</main>
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <CartNotification />
+            <Header />
+            <main>{children}</main>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

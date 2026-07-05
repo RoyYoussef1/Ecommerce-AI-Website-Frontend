@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { BiShoppingBag, BiMenu, BiX } from "react-icons/bi";
+import { useState, useRef, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { BiShoppingBag, BiMenu, BiX, BiUser, BiLogOut } from "react-icons/bi";
 import { HiSparkles } from "react-icons/hi2";
 import { useCart } from "./CartContext";
 
@@ -16,7 +17,20 @@ const NAV_LINKS = [
 export default function Header() {
   const { cart } = useCart();
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
+        setAccountOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const totalItems = cart.reduce(
     (sum: number, item: { quantity: number }) => sum + item.quantity,
@@ -72,6 +86,52 @@ export default function Header() {
             )}
           </Link>
 
+          {status === "authenticated" ? (
+            <div className="relative hidden md:block" ref={accountRef}>
+              <button
+                onClick={() => setAccountOpen((open) => !open)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  accountOpen
+                    ? "bg-indigo-500/20 text-indigo-200"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <BiUser size={18} />
+                <span className="max-w-28 truncate">
+                  {session.user?.name ?? "Account"}
+                </span>
+              </button>
+
+              {accountOpen && (
+                <div className="glass-strong absolute right-0 top-full mt-2 w-44 rounded-2xl p-2 animate-slide-down">
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition"
+                  >
+                    <BiLogOut size={17} />
+                    Log Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : status === "unauthenticated" ? (
+            <div className="hidden md:flex items-center gap-2">
+              <Link
+                href="/login"
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  pathname.startsWith("/login")
+                    ? "bg-indigo-500/20 text-indigo-200"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                Log In
+              </Link>
+              <Link href="/signup" className="btn-neon px-4 py-2 text-sm">
+                Sign Up
+              </Link>
+            </div>
+          ) : null}
+
           <button
             className="md:hidden flex h-9 w-9 items-center justify-center rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition"
             onClick={() => setMobileOpen((open) => !open)}
@@ -98,6 +158,46 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
+
+          <div className="mt-1 border-t border-white/[0.08] pt-2">
+            {status === "authenticated" ? (
+              <>
+                <div className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-200">
+                  <BiUser size={17} />
+                  <span className="truncate">
+                    {session.user?.name ?? "Account"}
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    signOut({ callbackUrl: "/" });
+                  }}
+                  className="flex w-full items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition"
+                >
+                  <BiLogOut size={17} />
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition"
+                >
+                  Log In
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-3 rounded-xl text-sm font-medium text-indigo-200 hover:text-white hover:bg-indigo-500/20 transition"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       )}
     </header>
