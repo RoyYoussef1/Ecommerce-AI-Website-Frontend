@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useCart } from "../../components/CartContext";
+import ChatSidebar from "../../components/ChatSidebar";
 import Link from "next/link";
 import {
   HiSparkles,
@@ -28,6 +30,10 @@ export default function ChatPage() {
   const [attachedImage, setAttachedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { addToCart } = useCart();
+  const { status } = useSession();
+  const isAuthed = status === "authenticated";
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [sidebarRefresh, setSidebarRefresh] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -64,6 +70,84 @@ export default function ChatPage() {
     setMessages((prev) => prev.map((m, i) => (i === index ? updater(m) : m)));
   }
 
+  // ---- Persistence (logged-in users only; guests skip all of this) ----
+
+  async function ensureConversation(firstMessage: string): Promise<string | null> {
+    if (!isAuthed) return null;
+    if (conversationId) return conversationId;
+
+    try {
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstMessage }),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      setConversationId(data.id);
+      setSidebarRefresh((n) => n + 1);
+      return data.id;
+    } catch {
+      return null;
+    }
+  }
+
+  async function persistExchange(
+    convId: string | null,
+    userContent: string,
+    assistantContent: string,
+    assistantProducts: any[]
+  ) {
+    if (!convId) return;
+
+    // Sequential so the user message is stored before the assistant reply
+    try {
+      await fetch(`/api/conversations/${convId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: "user", content: userContent }),
+      });
+      await fetch(`/api/conversations/${convId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          role: "assistant",
+          content: assistantContent,
+          products: assistantProducts,
+        }),
+      });
+      setSidebarRefresh((n) => n + 1);
+    } catch (err) {
+      console.error("Failed to save chat history:", err);
+    }
+  }
+
+  async function openConversation(id: string) {
+    try {
+      const res = await fetch(`/api/conversations/${id}`, { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setConversationId(id);
+      setMessages(
+        (data.messages ?? []).map((m: any) => ({
+          role: m.role,
+          content: m.content,
+          products: m.products ?? [],
+        }))
+      );
+      setIsThinking(false);
+    } catch (err) {
+      console.error("Failed to load conversation:", err);
+    }
+  }
+
+  function startNewChat() {
+    setConversationId(null);
+    setMessages([]);
+    setInput("");
+    setIsThinking(false);
+  }
+
   async function sendImageMessage(content: string, image: File, imageUrl: string) {
     const userMsg = { role: "user", content, image: imageUrl };
     setMessages((prev) => [...prev, userMsg]);
@@ -79,6 +163,15 @@ export default function ChatPage() {
     setAttachedImage(null);
     setPreviewUrl(null);
     setInput("");
+
+    // For logged-in users, make sure a conversation exists before streaming.
+    // Note: the image itself isn't persisted (no field for it), only the text
+    // prompt and the resulting products.
+    const convId = await ensureConversation(content || "Image search");
+
+    // Accumulated locally so the full response is available after the stream
+    let assistantContent = "";
+    let assistantProducts: any[] = [];
 
     try {
       const formData = new FormData();
@@ -129,12 +222,14 @@ export default function ChatPage() {
             if (event === "status") {
               setThinkingLabel(parsed.status || "");
             } else if (event === "token") {
+              assistantContent += parsed.token;
               setIsThinking(false);
               updateAssistant(assistantIndex, (m) => ({
                 ...m,
                 content: m.content + parsed.token,
               }));
             } else if (event === "products") {
+              assistantProducts = parsed;
               updateAssistant(assistantIndex, (m) => ({
                 ...m,
                 products: parsed,
@@ -145,6 +240,14 @@ export default function ChatPage() {
           } catch {}
         }
       }
+
+      // Persist only after the stream has fully finished
+      await persistExchange(
+        convId,
+        content || "Image search",
+        assistantContent,
+        assistantProducts
+      );
     } catch (err) {
       console.error("Image search failed:", err);
       updateAssistant(assistantIndex, (m) => ({
@@ -184,6 +287,13 @@ export default function ChatPage() {
       content: m.content,
     }));
 
+    // For logged-in users, make sure a conversation exists before streaming
+    const convId = await ensureConversation(content);
+
+    // Accumulated locally so the full response is available once "done" fires
+    let assistantContent = "";
+    let assistantProducts: any[] = [];
+
     const eventSource = new EventSource(
       "/api/chat/stream?" +
         new URLSearchParams({
@@ -194,6 +304,7 @@ export default function ChatPage() {
 
     eventSource.addEventListener("token", (e: any) => {
       const { token } = JSON.parse(e.data);
+      assistantContent += token;
       setIsThinking(false);
       setMessages((prev) =>
         prev.map((m, i) =>
@@ -204,6 +315,7 @@ export default function ChatPage() {
 
     eventSource.addEventListener("products", (e: any) => {
       const products = JSON.parse(e.data);
+      assistantProducts = products;
       setMessages((prev) =>
         prev.map((m, i) => (i === assistantIndex ? { ...m, products } : m))
       );
@@ -230,6 +342,8 @@ export default function ChatPage() {
     eventSource.addEventListener("done", () => {
       setIsThinking(false);
       eventSource.close();
+      // Persist only after the stream has fully finished
+      persistExchange(convId, content, assistantContent, assistantProducts);
     });
 
     setInput("");
@@ -239,7 +353,21 @@ export default function ChatPage() {
   const canSend = Boolean(input.trim() || attachedImage);
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-92px)] max-w-4xl flex-col px-4 pt-4 pb-4">
+    <div
+      className={`mx-auto flex h-[calc(100dvh-92px)] gap-4 px-4 pt-4 pb-4 ${
+        isAuthed ? "max-w-6xl" : "max-w-4xl"
+      }`}
+    >
+      {isAuthed && (
+        <ChatSidebar
+          activeId={conversationId}
+          refreshKey={sidebarRefresh}
+          onSelect={openConversation}
+          onNewChat={startNewChat}
+        />
+      )}
+
+      <div className="flex min-w-0 flex-1 flex-col">
       {/* Messages / Welcome */}
       <div className="flex-1 overflow-y-auto rounded-3xl">
         {isEmpty ? (
@@ -433,6 +561,7 @@ export default function ChatPage() {
             <HiPaperAirplane size={18} />
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
